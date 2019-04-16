@@ -151,7 +151,7 @@ int main() {
           msgJson["next_y"] = next_y_vals;
 
           msgJson["mpc_x"] = mpc_x_vals;
-          msgJson["next_y"] = mpc_y_vals;
+          msgJson["mpc_y"] = mpc_y_vals;
 
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
           std::cout << msg << std::endl;
