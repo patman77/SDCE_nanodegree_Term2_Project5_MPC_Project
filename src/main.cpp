@@ -52,6 +52,8 @@ int main() {
            * DONE: Calculate steering angle and throttle using MPC.
            * Both are in between [-1, 1].
            */
+          // first, transform all waypoints to vehicle coordinate system, i.e. subtract vehicle position
+          // and counterrotate with vehicle orientation.
           for(int i=0; i<ptsx.size(); ++i)
           {
             // shift car reference angle to 90 degrees
@@ -61,7 +63,10 @@ int main() {
             ptsx[i] = (shift_x * cos(0-psi)-shift_y*sin(0-psi));
             ptsy[i] = (shift_x * sin(0-psi)+shift_y*cos(0-psi));
           }
-
+          // After that, vehicle position/orientation is the reference, so normalize these ones:
+          px = py = 0.0;
+          psi = 0.0;
+          
           double* ptrx = &ptsx[0];
           Eigen::Map<Eigen::VectorXd> ptsx_transform(ptrx, 6);
 
@@ -88,7 +93,7 @@ int main() {
           // NOTE: Remember to divide by deg2rad(25) before you send the 
           //   steering value back. Otherwise the values will be in between 
           //   [-deg2rad(25), deg2rad(25] instead of [-1, 1].
-          msgJson["steering_angle"] = steer_value;
+          msgJson["steering_angle"] = -1.0 * steer_value; // invert sign of steer_value
           msgJson["throttle"] = throttle_value;
 
           // Display the MPC predicted trajectory 

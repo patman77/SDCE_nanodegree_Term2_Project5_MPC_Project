@@ -39,13 +39,15 @@ dt was to be chosen such that tpt is around 1 sec, which turned out to be a good
 
 # Description of Polynomial Fitting and MPC Preprocessing
 
-A polynomial of degree 3 is fitted to the waypoints, see line 71 in main.cpp:
+A polynomial of degree 3 is fitted to the waypoints, see line 76 in main.cpp:
 
 ```
  auto coeffs = polyfit(ptsx_transform, ptsy_transform, 3); // fit to polynomial of degree 3
  ```
 
-MPC procedure follows without any preprocessing, see line 84 in main.cpp:
+Before that, all incoming waypoints are transformed to vehicle coordinate system to make things easier. This is inspired by the video walkthrough, at 04:15.
+
+MPC procedure follows immediately after, see line 89 in main.cpp:
 
 ```
 auto vars = mpc.Solve(state, coeffs);
