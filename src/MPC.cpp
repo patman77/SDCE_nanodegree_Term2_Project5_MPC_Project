@@ -31,7 +31,7 @@ const double Lf = 2.67;
 
 double ref_cte  = 0.0;
 double ref_epsi = 0.0;
-double ref_v    = 100.0;
+double ref_v    = 40.0;
 
 // Taken from the MPC quiz:
 // The solver takes all the state variables and actuator
