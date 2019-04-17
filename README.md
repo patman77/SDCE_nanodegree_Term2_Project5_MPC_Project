@@ -89,6 +89,7 @@ And second, each time the solver returns the resulting actuator values steering 
 #endif
 ```
 
+After latency handling has been introduced, the vehicle's steering became a little bit "wobblier". So I reduced the weight of the cost function term influencing the deviation from the current speed to the reference speed from 1.0 down to 0.5. This also had the effect, that the vehicle adapted better to curves in the sense that it brakes right before a curve. This is a more natural behaviour in comparison to a human driver: he/she wouldn't go into a curve with full speed, either.
 
 ---
 
