@@ -61,6 +61,35 @@ After the steering angle and the throttle has been determined by the solver, it 
 std::this_thread::sleep_for(std::chrono::milliseconds(100));
 ```
 
+In addition, the model predictive had to be adapted to tackle the introduced latency.
+
+First, the state variables are increased:
+
+```
+#ifdef LATENCY_HANDLING
+          // Add latency of 100ms
+          px = v * cos(psi) * latency_dt;
+          py = v * sin(psi) * latency_dt;
+          psi = v * psi / Lf * latency_dt;
+          v = v + throttle_value * latency_dt;
+          cte = cte + v * sin(epsi) * latency_dt;
+          epsi = epsi + v * psi / Lf * latency_dt;
+#endif
+````
+
+And second, each time the solver returns the resulting actuator values steering ```delta``` and throttle ```a```, they are stored and used as upper and lower bounds for the solver:
+
+```
+#ifdef LATENCY_HANDLING
+  // new, to handle latency
+  vars_lowerbound[delta_start]=prevDelta;
+  vars_upperbound[delta_start]=prevDelta;
+  vars_lowerbound[a_start]=prevA;
+  vars_upperbound[a_start]=prevA;
+#endif
+```
+
+
 ---
 
 ## Dependencies
