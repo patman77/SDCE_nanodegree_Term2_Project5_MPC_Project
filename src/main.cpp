@@ -48,6 +48,7 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 #define DEBUG_OUTPUT
+#undef DEBUG_OUTPUT
 #ifdef DEBUG_OUTPUT
           std::cout<<"px="<<px<<", py="<<py<<", psi="<<psi<<", v="<<v<<std::endl;
 #endif
@@ -135,7 +136,7 @@ int main() {
 
           msgJson["mpc_x"] = mpc_x_vals;
           msgJson["mpc_y"] = mpc_y_vals;
-#if 0
+#if 1
           for(int i=2; i<vars.size(); ++i)
           {
             if(i%2 == 0)
