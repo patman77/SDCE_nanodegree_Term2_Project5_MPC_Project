@@ -47,7 +47,10 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
-
+#define DEBUG_OUTPUT
+#ifdef DEBUG_OUTPUT
+          std::cout<<"px="<<px<<", py="<<py<<", psi="<<psi<<", v="<<v<<std::endl;
+#endif
           /**
            * DONE: Calculate steering angle and throttle using MPC.
            * Both are in between [-1, 1].
@@ -56,12 +59,19 @@ int main() {
           // and counterrotate with vehicle orientation.
           for(int i=0; i<ptsx.size(); ++i)
           {
+#ifdef DEBUG_OUTPUT
+            //std::cout<<"before transform: pts["<<i<<"]="<<ptsx[i]<<", "<<ptsy[i]<<std::endl;
+#endif
+
             // shift car reference angle to 90 degrees
             double shift_x = ptsx[i]-px;
             double shift_y = ptsy[i]-py;
 
             ptsx[i] = (shift_x * cos(0-psi)-shift_y*sin(0-psi));
             ptsy[i] = (shift_x * sin(0-psi)+shift_y*cos(0-psi));
+#ifdef DEBUG_OUTPUT
+            std::cout<<"after transform: pts["<<i<<"]="<<ptsx[i]<<", "<<ptsy[i]<<std::endl;
+#endif
           }
           // After that, vehicle position/orientation is the reference, so normalize these ones:
           px = py = 0.0;
@@ -74,6 +84,9 @@ int main() {
           Eigen::Map<Eigen::VectorXd> ptsy_transform(ptry, 6);
 
           auto coeffs = polyfit(ptsx_transform, ptsy_transform, 3); // fit to polynomial of degree 3
+#ifdef DEBUG_OUTPUT
+          //std::cout<<"called polyfit"<<std::endl;
+#endif
 
           // calculate cte and epsi
           double cte = polyeval(coeffs, 0);
@@ -85,8 +98,13 @@ int main() {
 
           Eigen::VectorXd state(6);
           state << 0, 0, 0, v, cte, epsi; // fill state vector
-
+#ifdef DEBUG_OUTPUT
+          //std::cout<<"calling mpc.Solve"<<std::endl;
+#endif
           auto vars = mpc.Solve(state, coeffs);
+#ifdef DEBUG_OUTPUT
+          //std::cout<<"mpc.Solve called"<<std::endl;
+#endif
 
 
           json msgJson;
@@ -95,13 +113,20 @@ int main() {
           //   [-deg2rad(25), deg2rad(25] instead of [-1, 1].
           msgJson["steering_angle"] = -1.0 * steer_value; // invert sign of steer_value
           msgJson["throttle"] = throttle_value;
+          //msgJson["steering_angle"] = 0.0;
+          //msgJson["throttle"] = 1.0;
+#ifdef DEBUG_OUTPUT
+          //std::cout<<"steering angle and throttle sent"<<std::endl;
+#endif
 
           // Display the MPC predicted trajectory 
           const double poly_inc = 2.5; // 2.5 distance between points predicted ahead
           const int num_points  = 25; // 25 points into the potential future
 
-          vector<double> mpc_x_vals(num_points-2);
-          vector<double> mpc_y_vals(num_points-2);
+          //vector<double> mpc_x_vals(num_points-2);
+          //vector<double> mpc_y_vals(num_points-2);
+          vector<double> mpc_x_vals;
+          vector<double> mpc_y_vals;
           /**
            * DONE: add (x,y) points to list here, points are in reference to
            *   the vehicle's coordinate system the points in the simulator are 
@@ -110,32 +135,37 @@ int main() {
 
           msgJson["mpc_x"] = mpc_x_vals;
           msgJson["mpc_y"] = mpc_y_vals;
-
+#if 0
           for(int i=2; i<vars.size(); ++i)
           {
             if(i%2 == 0)
             {
-              //mpc_x_vals.push_back(vars[i]); // push_back can slow down
-              mpc_x_vals[i] = vars[i];
+              mpc_x_vals.push_back(vars[i]); // push_back can slow down
+              //mpc_x_vals[i] = vars[i];
             }
             else
             {
-              //mpc_y_vals.push_back(vars[i]); // push_back can slow down
-              mpc_y_vals[i] = vars[i];
+              mpc_y_vals.push_back(vars[i]); // push_back can slow down
+              //mpc_y_vals[i] = vars[i];
             }
           }
-
+#endif
           // Display the waypoints/reference line
-          vector<double> next_x_vals(num_points-1);
-          vector<double> next_y_vals(num_points-1);
+          //vector<double> next_x_vals(num_points-1);
+          //vector<double> next_y_vals(num_points-1);
+          vector<double> next_x_vals;
+          vector<double> next_y_vals;
 
           for(int i=1; i<num_points; ++i)
           {
-            //next_x_vals.push_back(poly_inc*i);                   // push_back can get really slow
-            //next_y_vals.push_back(polyeval(coeffs, poly_inc*i)); // push_back can get really slow
-            next_x_vals[i-1] = poly_inc*i;
-            next_y_vals[i-1] = polyeval(coeffs, poly_inc*i);
+            next_x_vals.push_back(poly_inc*i);                   // push_back can get really slow
+            next_y_vals.push_back(polyeval(coeffs, poly_inc*i)); // push_back can get really slow
+            //next_x_vals[i-1] = poly_inc*i;
+            //next_y_vals[i-1] = polyeval(coeffs, poly_inc*i);
           }
+#ifdef DEBUG_OUTPUT
+          //std::cout<<"calculated visu"<<std::endl;
+#endif
 
           /**
            * DONE: add (x,y) points to list here, points are in reference to
@@ -144,14 +174,24 @@ int main() {
            */
           double Lf = 2.67;
 
+#if 1
           msgJson["steering_angle"] = vars[0]/(deg2rad(25)*Lf);
           msgJson["throttle"]       = vars[1];
-
+#else
+          msgJson["steering_angle"] = 0.0;
+          msgJson["throttle"]       = 1.0;
+#endif
+#if 1 // set to 0 to deactivate visu for a moment
           msgJson["next_x"] = next_x_vals;
           msgJson["next_y"] = next_y_vals;
 
           msgJson["mpc_x"] = mpc_x_vals;
           msgJson["mpc_y"] = mpc_y_vals;
+
+#endif
+#ifdef DEBUG_OUTPUT
+          //std::cout<<"constructed json entities"<<std::endl;
+#endif
 
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
           std::cout << msg << std::endl;
@@ -163,8 +203,14 @@ int main() {
           //   around the track with 100ms latency.
           //
           // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE SUBMITTING.
+#ifdef DEBUG_OUTPUT
+          std::cout<<"sleeping 100ms"<<std::endl;
+#endif
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
+#ifdef DEBUG_OUTPUT
+          std::cout<<"json msg sent"<<std::endl;
+#endif
         }  // end "telemetry" if
       } else {
         // Manual driving
