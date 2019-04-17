@@ -104,7 +104,8 @@ int main() {
           double throttle_value = j[1]["throttle"];    // grab from json, inspired by video walkthrough
 
           Eigen::VectorXd state(6);
-          state << 0, 0, 0, v, cte, epsi; // fill state vector
+          //state << 0, 0, 0, v, cte, epsi; // fill state vector, without latency handling
+          state << px, py, psi, v, cte, epsi; // fill state vector, without latency handling
 #ifdef DEBUG_OUTPUT
           //std::cout<<"calling mpc.Solve"<<std::endl;
 #endif
