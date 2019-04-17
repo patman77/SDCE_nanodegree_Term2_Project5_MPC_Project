@@ -11,6 +11,9 @@
 #include "json.hpp"
 #include "MPC.h"
 
+#define DEBUG_OUTPUT
+#undef DEBUG_OUTPUT
+
 // for convenience
 using nlohmann::json;
 using std::string;
@@ -33,7 +36,9 @@ int main() {
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
     string sdata = string(data).substr(0, length);
+#ifdef DEBUG_OUTPUT
     std::cout << sdata << std::endl;
+#endif
     if (sdata.size() > 2 && sdata[0] == '4' && sdata[1] == '2') {
       string s = hasData(sdata);
       if (s != "") {
@@ -47,8 +52,6 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
-#define DEBUG_OUTPUT
-#undef DEBUG_OUTPUT
 #ifdef DEBUG_OUTPUT
           std::cout<<"px="<<px<<", py="<<py<<", psi="<<psi<<", v="<<v<<std::endl;
 #endif
@@ -70,6 +73,8 @@ int main() {
 
             ptsx[i] = (shift_x * cos(0-psi)-shift_y*sin(0-psi));
             ptsy[i] = (shift_x * sin(0-psi)+shift_y*cos(0-psi));
+            //ptsx[i] = (shift_x * cos(0)-shift_y*sin(0));
+            //  ptsy[i] = (shift_x * sin(0)+shift_y*cos(0));
 #ifdef DEBUG_OUTPUT
             std::cout<<"after transform: pts["<<i<<"]="<<ptsx[i]<<", "<<ptsy[i]<<std::endl;
 #endif
@@ -176,7 +181,7 @@ int main() {
           double Lf = 2.67;
 
 #if 1
-          msgJson["steering_angle"] = vars[0]/(deg2rad(25)*Lf);
+          msgJson["steering_angle"] = -1.0*vars[0]/(deg2rad(25)*Lf);
           msgJson["throttle"]       = vars[1];
 #else
           msgJson["steering_angle"] = 0.0;
@@ -195,7 +200,9 @@ int main() {
 #endif
 
           auto msg = "42[\"steer\"," + msgJson.dump() + "]";
+#ifdef DEBUG_OUTPUT
           std::cout << msg << std::endl;
+#endif
           // Latency
           // The purpose is to mimic real driving conditions where
           //   the car does actuate the commands instantly.
