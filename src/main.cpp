@@ -15,7 +15,7 @@
 #undef DEBUG_OUTPUT
 
 #define LATENCY_HANDLING
-#undef LATENCY_HANDLING // comment to activate latency and latency handling
+//#undef LATENCY_HANDLING // comment to activate latency and latency handling
 
 // for convenience
 using nlohmann::json;
@@ -27,7 +27,8 @@ constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
 double rad2deg(double x) { return x * 180 / pi(); }
 
-const double latency_dt = 100;
+const double latency_dt_ms = 100.0; // in milliseconds
+const double latency_dt = latency_dt/1000.0; // in seconds
 const double Lf = 2.67;
 
 
@@ -230,10 +231,10 @@ int main() {
           //
           // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE SUBMITTING.
 #ifdef DEBUG_OUTPUT
-          std::cout<<"sleeping 100ms"<<std::endl;
+          std::cout<<"sleeping "<<latency_dt_ms<<" ms"<<std::endl;
 #endif
 #ifdef LATENCY_HANDLING
-          std::this_thread::sleep_for(std::chrono::milliseconds(100));
+          std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<std::chrono::milliseconds>((int)latency_dt_ms)));
 #endif
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
 #ifdef DEBUG_OUTPUT

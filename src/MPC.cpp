@@ -33,7 +33,7 @@ double ref_cte  = 0.0;
 double ref_epsi = 0.0;
 //const double mph2ms = 0.44704;
 //double ref_v    = 40.0 * mph2ms; // in mph, convert to m/s
-double ref_v    = 40.0;
+double ref_v    = 50.0;
 
 // Taken from the MPC quiz:
 // The solver takes all the state variables and actuator
@@ -80,8 +80,8 @@ class FG_eval {
       fg[0] += CppAD::pow(vars[epsi_start + t], 2);      // minimize orientation error for every time step
       fg[0] += CppAD::pow(vars[v_start + t] - ref_v, 2); // minimize deviation to reference speed
 #else // video walkthrough, different weighting
-      fg[0] += 2000.0*CppAD::pow(vars[cte_start + t], 2);       // minimize Cross Track Error for every time step
-      fg[0] += 2000.0*CppAD::pow(vars[epsi_start + t], 2);      // minimize orientation error for every time step
+      fg[0] += 200.0*CppAD::pow(vars[cte_start + t], 2);       // minimize Cross Track Error for every time step
+      fg[0] += 200.0*CppAD::pow(vars[epsi_start + t], 2);      // minimize orientation error for every time step
       fg[0] += 1.0   *CppAD::pow(vars[v_start + t] - ref_v, 2); // minimize deviation to reference speed
 #endif
     }
@@ -103,7 +103,7 @@ class FG_eval {
       fg[0] += CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2); // minimize sequential steering gaps
       fg[0] += CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);         // minimize sequential acceleration gaps
 #else // video walkthrough, different weighting
-      fg[0] += 500.0*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2); // minimize sequential steering gaps
+      fg[0] += 5000.0*CppAD::pow(vars[delta_start + t + 1] - vars[delta_start + t], 2); // minimize sequential steering gaps
       fg[0] += 10.0 *CppAD::pow(vars[a_start + t + 1] - vars[a_start + t], 2);         // minimize sequential acceleration gaps
 #endif
     }
