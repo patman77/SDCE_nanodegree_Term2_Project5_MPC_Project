@@ -14,6 +14,9 @@
 #define DEBUG_OUTPUT
 #undef DEBUG_OUTPUT
 
+#define LATENCY_HANDLING
+#undef LATENCY_HANDLING // comment to activate latency and latency handling
+
 // for convenience
 using nlohmann::json;
 using std::string;
@@ -23,6 +26,10 @@ using std::vector;
 constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
 double rad2deg(double x) { return x * 180 / pi(); }
+
+const double latency_dt = 100;
+const double Lf = 2.67;
+
 
 int main() {
   uWS::Hub h;
@@ -103,6 +110,16 @@ int main() {
           double steer_value = j[1]["steering_angle"]; // grab from json, inspired by video walkthrough
           double throttle_value = j[1]["throttle"];    // grab from json, inspired by video walkthrough
 
+#ifdef LATENCY_HANDLING
+          // Add latency of 100ms
+          px = v * cos(psi) * latency_dt;
+          py = v * sin(psi) * latency_dt;
+          psi = v * psi / Lf * latency_dt;
+          v = v + throttle_value * latency_dt;
+          cte = cte + v * sin(epsi) * latency_dt;
+          epsi = epsi + v * psi / Lf * latency_dt;
+#endif
+
           Eigen::VectorXd state(6);
           //state << 0, 0, 0, v, cte, epsi; // fill state vector, without latency handling
           state << px, py, psi, v, cte, epsi; // fill state vector, without latency handling
@@ -180,7 +197,6 @@ int main() {
            *   the vehicle's coordinate system the points in the simulator are 
            *   connected by a Yellow line
            */
-          double Lf = 2.67;
 
 #if 1
           msgJson["steering_angle"] = -1.0*vars[0]/(deg2rad(25)*Lf);
@@ -216,7 +232,9 @@ int main() {
 #ifdef DEBUG_OUTPUT
           std::cout<<"sleeping 100ms"<<std::endl;
 #endif
+#ifdef LATENCY_HANDLING
           std::this_thread::sleep_for(std::chrono::milliseconds(100));
+#endif
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
 #ifdef DEBUG_OUTPUT
           std::cout<<"json msg sent"<<std::endl;

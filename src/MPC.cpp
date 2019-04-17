@@ -230,6 +230,7 @@ std::vector<double> MPC::Solve(const VectorXd &state, const VectorXd &coeffs) {
     vars_upperbound[i] =  1.0e19;
   }
 
+
   // The upper and lower limits of delta are set to -25 and 25
   // degrees (values in radians).
   // NOTE: Feel free to change this to something else.
@@ -249,7 +250,14 @@ std::vector<double> MPC::Solve(const VectorXd &state, const VectorXd &coeffs) {
     vars_lowerbound[i] = -1.0;
     vars_upperbound[i] =  1.0;
   }
-
+#ifdef LATENCY_HANDLING
+  // new, to handle latency
+  vars_lowerbound[delta_start]=prevDelta;
+  vars_upperbound[delta_start]=prevDelta;
+  vars_lowerbound[a_start]=prevA;
+  vars_upperbound[a_start]=prevA;
+#endif
+  
   // Lower and upper limits for the constraints
   // Should be 0 besides initial state.
   Dvector constraints_lowerbound(n_constraints);
@@ -315,8 +323,15 @@ std::vector<double> MPC::Solve(const VectorXd &state, const VectorXd &coeffs) {
 
   std::vector<double> result;
 
-  result.push_back(solution.x[delta_start]);
-  result.push_back(solution.x[a_start]);
+#ifndef LATENCY_HANDLING
+  result.push_back(solution.x[delta_start]); // without latency handling
+  result.push_back(solution.x[a_start]);     // without latency handling
+#else
+  result.push_back(solution.x[delta_start+1]); // new with latency handling
+  result.push_back(solution.x[a_start+1]);     // new with latency handling
+  prevDelta = solution.x[delta_start+1];
+  prevA     = solution.x[a_start+1];
+#endif
 
   for(int i=0; i<N-1; ++i)
   {

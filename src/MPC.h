@@ -14,6 +14,10 @@ class MPC {
   // Return the first actuations.
   std::vector<double> Solve(const Eigen::VectorXd &state, 
                             const Eigen::VectorXd &coeffs);
+
+  double prevDelta = 0.0;
+  double prevA     = 0.0;
+  
 };
 
 #endif  // MPC_H
