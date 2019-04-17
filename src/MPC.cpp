@@ -31,6 +31,8 @@ const double Lf = 2.67;
 
 double ref_cte  = 0.0;
 double ref_epsi = 0.0;
+//const double mph2ms = 0.44704;
+//double ref_v    = 40.0 * mph2ms; // in mph, convert to m/s
 double ref_v    = 40.0;
 
 // Taken from the MPC quiz:

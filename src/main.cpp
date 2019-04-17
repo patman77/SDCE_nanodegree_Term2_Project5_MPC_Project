@@ -52,6 +52,7 @@ int main() {
           double py = j[1]["y"];
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
+          //v *= 0.44704; // convert to m/s
 #ifdef DEBUG_OUTPUT
           std::cout<<"px="<<px<<", py="<<py<<", psi="<<psi<<", v="<<v<<std::endl;
 #endif
@@ -111,7 +112,7 @@ int main() {
 #ifdef DEBUG_OUTPUT
           //std::cout<<"mpc.Solve called"<<std::endl;
 #endif
-
+//
 
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the 
